@@ -31,13 +31,13 @@ class Bank
         System.out.println("Account Opening Process Started");
 
         System.out.print("Enter your Name: ");
-        Name = s.next(); // how to input string with space in java
+        Name = s.nextLine();
 
         System.out.print("Enter your address: ");
-        Address = s.next(); //how to clear input buffer
+        Address = s.nextLine(); 
 
         System.out.print("Enter today's Date: ");
-        Date = s.next();
+        Date = s.nextLine();
 
         AccountNumber = rand.nextInt(10000, 99999);
         System.out.println("New Account Number is alloted to you: " + AccountNumber);
@@ -106,8 +106,6 @@ class Bank
             System.out.println("No match found for Given Account Number");
         }
 
-        // input Scanner closed
-        s.close();
     }
 
     public void View_Info()
@@ -127,9 +125,7 @@ class Bank
         {
             System.out.println("No match found for Given Account Number");
         }
-
     }
-    
 }
 
 class BankManagement
