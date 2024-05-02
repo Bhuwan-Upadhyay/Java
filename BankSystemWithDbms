@@ -1,0 +1,297 @@
+import java.util.Scanner;
+import java.util.Random;
+import java.sql.*;
+
+/*
+ Acc no.
+ Name
+ adress
+ opening balance
+ date
+
+ constructor
+ Withdraw 
+ Deposit
+ */
+class Bank {
+
+    Connection conn = null;
+    String user = "root";
+    String password = "12345";
+    PreparedStatement pstmt = null;
+
+    Bank() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/bank", user, password);
+
+        } catch (Exception exception) {
+            System.out.println(exception);
+        }
+    }
+
+    // Bank Variables
+    private int AccountNumber;
+    private String Name;
+    private String Address;
+    private Double Balance = 0d;
+    private String Date;
+
+    // Input Scanner
+    private Scanner s = new Scanner(System.in);
+
+    public void Account_Opening() {
+        Random rand = new Random();
+
+        System.out.println("Account Opening Process Started");
+
+        System.out.print("Enter your Name: ");
+        Name = s.nextLine();
+
+        System.out.print("Enter your address: ");
+        Address = s.nextLine();
+
+        System.out.print("Enter today's Date: ");
+        Date = s.nextLine();
+
+        AccountNumber = rand.nextInt(10000, 99999);
+        System.out.println("New Account Number is alloted to you: " + AccountNumber);
+
+        Balance += 2000d;
+        System.out.println("Openning amount of RS 2000 is added to your new Account");
+        System.out.println("Current Balance: RS " + Balance);
+
+        System.out.println("Congratulation!! Your account has been created");
+
+        String query = "INSERT INTO customer (Acno, name, address, balance, date) VALUES (?, ?, ?, ?, ?)";
+        try {
+            pstmt = conn.prepareStatement(query);
+            pstmt.setInt(1, AccountNumber);
+            pstmt.setString(2, Name);
+            pstmt.setString(3, Address);
+            pstmt.setDouble(4, Balance);
+            pstmt.setString(5, Date);
+            pstmt.executeUpdate();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+    }
+
+    public void Withdraw() {
+        System.out.print("Enter the Account Number: ");
+        int tempAcno = s.nextInt();
+        System.out.println("____________________________________________________________________________________");
+        Boolean isAcno = false;
+
+        String AcnoChecker = "select Acno from customer;";
+        try {
+            pstmt = conn.prepareStatement(AcnoChecker);
+            var rs = pstmt.executeQuery(AcnoChecker);
+            while (rs.next()) {
+                if (rs.getInt("Acno") == tempAcno) {
+                    isAcno = true;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        int tempBalance = -1;
+        String balanceQuery = "select balance from customer where Acno = " + tempAcno + ";";
+        try {
+            pstmt = conn.prepareStatement(balanceQuery);
+            var rs = pstmt.executeQuery(balanceQuery);
+            while (rs.next()) {
+                tempBalance = rs.getInt("balance");
+
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        // String query = "select balance from customer where Acno = " + temp + ";";
+        if (isAcno) {
+            System.out.print("Enter the amount for withdrawal: ");
+            double withdrawalAmount = s.nextDouble();
+            if (withdrawalAmount <= 0) {
+                System.out.println("Error! Withdraw amount should be greater than zero!!");
+            } else if (tempBalance < withdrawalAmount) {
+                System.out.println("Insufficient Balanece");
+            } else {
+                tempBalance -= withdrawalAmount;
+
+                String updateBalance = "update customer set balance = " + tempBalance + " where Acno =" + tempAcno
+                        + ";";
+                try {
+                    pstmt.executeUpdate(updateBalance);
+                    System.out.println("Withdrawal Successful");
+                    System.out.println("Current Balance After Withdraw: RS " + tempBalance);
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+        } else {
+            System.out.println("No match found for Given Account Number");
+        }
+    }
+
+    public void Deposit() {
+        System.out.print("Enter the Account Number: ");
+        int tempAcno = s.nextInt();
+        System.out.println("____________________________________________________________________________________");
+        Boolean isAcno = false;
+
+        String AcnoChecker = "select Acno from customer;";
+        try {
+            pstmt = conn.prepareStatement(AcnoChecker);
+            var rs = pstmt.executeQuery(AcnoChecker);
+            while (rs.next()) {
+                if (rs.getInt("Acno") == tempAcno) {
+                    isAcno = true;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        int tempBalance = -1;
+        String balanceQuery = "select balance from customer where Acno = " + tempAcno + ";";
+        try {
+            pstmt = conn.prepareStatement(balanceQuery);
+            var rs = pstmt.executeQuery(balanceQuery);
+            while (rs.next()) {
+                tempBalance = rs.getInt("balance");
+
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        if (isAcno) {
+            System.out.print("Enter the amount for deposit: ");
+            Double depositAmount = s.nextDouble();
+
+            if (depositAmount <= 0) {
+                System.out.println("Error! Deposit amount should be greater than zero!!");
+            } else {
+                tempBalance += depositAmount;
+
+                String updateBalance = "update customer set balance = " + tempBalance + " where Acno =" + tempAcno
+                        + ";";
+                try {
+                    pstmt.executeUpdate(updateBalance);
+                    System.out.println("Deposit Successful");
+                    System.out.println("Current Balance After Deposit: RS " + tempBalance);
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+        } else {
+            System.out.println("No match found for Given Account Number");
+        }
+
+    }
+
+    public void View_Info() {
+        System.out.print("Enter the Account Number: ");
+        int tempAcno = s.nextInt();
+        System.out.println("____________________________________________________________________________________");
+        Boolean isAcno = false;
+
+        String AcnoChecker = "select Acno from customer;";
+        try {
+            pstmt = conn.prepareStatement(AcnoChecker);
+            var rs = pstmt.executeQuery(AcnoChecker);
+            while (rs.next()) {
+                if (rs.getInt("Acno") == tempAcno) {
+                    isAcno = true;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        if (isAcno) {
+            try {
+                String infoQuery = "select * from customer where Acno = " + tempAcno + ";";
+                pstmt = conn.prepareStatement(infoQuery);
+                var rs = pstmt.executeQuery(infoQuery);
+
+                while (rs.next()) {
+                    System.out.println("Name = " + rs.getString("name"));
+                    System.out.println("Account Number = " + rs.getInt("Acno"));
+                    System.out.println("Date of opening Account = " + rs.getString("date"));
+                    System.out.println("Address = " + rs.getString("address"));
+                    System.out.println("Balance = RS " + rs.getInt("balance"));
+                }
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+
+        } else {
+            System.out.println("No match found for Given Account Number");
+        }
+    }
+}
+
+class BankManagement {
+    public static void main(String agr[]) {
+        Scanner s = new Scanner(System.in);
+        int choice = -1;
+
+        Bank b = new Bank();
+
+        do {
+            System.out.println("Bank Management System");
+            System.out.println("1. Opening Bank Account");
+            System.out.println("2. Withdraw Money");
+            System.out.println("3. Deposit Money");
+            System.out.println("4. View Account Information");
+            System.out.println("5. Exit System");
+            System.out.print("Enter you choice: ");
+            choice = s.nextInt();
+            System.out.println("____________________________________________________________________________________");
+
+            switch (choice) {
+                case 1:
+                    b.Account_Opening();
+                    System.out.println("____________________________________________________________________________________");
+                    break;
+
+                case 2:
+                    b.Withdraw();
+                    System.out.println("____________________________________________________________________________________");
+                    break;
+
+                case 3:
+                    b.Deposit();
+                    System.out.println("____________________________________________________________________________________");
+                    break;
+
+                case 4:
+                    b.View_Info();
+                    System.out.println("____________________________________________________________________________________");
+                    break;
+
+                case 5:
+                    System.out.println("Exited from system");
+                    choice = 0;
+                    break;
+
+                default:
+                    System.out.println("Error! You have entered wrong choice");
+                    System.out.println("By default you are exiting from system");
+                    choice = 0;
+                    break;
+            }
+
+        } while (choice != 0);
+
+        s.close();
+
+    }
+}
